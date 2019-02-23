@@ -34,6 +34,35 @@ router.get('/', (req,res,next)=>{
         });
 });
 
+router.get('/:productId', (req, res, next) => {
+    const id = req.params.productId;
+    Product.findById(id)
+        .select("name price _id")
+        .exec()
+        .then(doc => {
+            console.log("From database", doc);
+            if (doc) {
+                res.status(200).json({
+                    product: doc,
+                    request: {
+                        type: "GET",
+                        url:"http://localhost:3000/products/" + doc._id
+                    }
+                });
+            } else {
+                res.status(404).json({
+                    message:"No valid entry found for the product"
+                });
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            err.status(500).json({
+                err:err
+            });
+        });
+});
+
 router.post( '/', (req,res,next)=> {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
@@ -100,4 +129,28 @@ router.delete( '/:productId', (req,res,next)=>{
         });
 });
 
+router.patch('/:productId', (req, res, next)=> {
+    const id = req.params.productId;
+    const updateOps = {};
+    for (const ops of req.body) {
+        updateOps[ops.propName] = ops.value;
+    }
+    Product.update({ _id:id}, { $set: updateOps })
+        .exec()
+        .then(result => {
+            res.status(200).json({
+                message: "Product updated",
+                request: {
+                    type: 'GET',
+                    url: 'http://localhost:3000/products/' + id
+                }
+            });
+        })
+        .catch(err => {
+            console.log(err)
+            err.status(500).json({
+                err:err
+            });
+        });
+});
 module.exports= router;
