@@ -3,10 +3,35 @@ const router= express.Router();
 const mongoose = require('mongoose');
 const Product = require('../models/product');
 
-router.get( '/', (req,res,next)=>{
-    res.status(200).json({
-        message:"welcome to product!"
-    });
+//데이터불러오기
+router.get('/', (req,res,next)=>{
+    
+    Product.find()
+        .select("name price _id")
+        .exec()
+        .then(docs => {
+            const response = {
+                count : docs.length,
+                products: docs.map(doc=> {
+                    return {
+                        name: doc.name,
+                        price: doc.price,
+                        _id:doc._id,
+                        request: {
+                            type:"GET",
+                            url: "http://localhost:3000/products/" + doc._id
+                        }
+                    };
+                })
+            };
+            res.status(200).json(response);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                err:err
+            });
+        });
 });
 
 router.post( '/', (req,res,next)=> {
@@ -22,6 +47,15 @@ router.post( '/', (req,res,next)=> {
             console.log(result);
             res.status(201).json({
                 message:"Created product successfully",
+                createdProduct: {
+                    name: result.name,
+                    price: result.price,
+                    _id: result._id,
+                    request: {
+                        type: 'GET',
+                        url: "http://localhost:3000/products/" + result._id
+                    }
+                }
             });
         })
         .catch(err => {
@@ -44,9 +78,26 @@ router.post( '/:productId', (req,res,next)=>{
 });
 
 router.delete( '/:productId', (req,res,next)=>{
-    res.status(200).json({
-        message:"deleted the product"
-    });
+
+    const id = req.params.productId;
+    Product.remove({ _id:id })
+        .exec()
+        .then(result => {
+            res.status(200).json({
+                message:"Product deleted",
+                request: {
+                    type: 'GET',
+                    url:'http://localhost:3000/products',
+                    body: { name: 'String', price: 'Number'}
+                }
+            });
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({
+                err:err
+            });
+        });
 });
 
 module.exports= router;

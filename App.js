@@ -9,9 +9,12 @@ const orderRoutes = require('./api/routes/orders');
 
 const db = require('./config/key').mongoURI;
 
+
 mongoose.connect(db, { useNewUrlParser: true })
     .then(() => console.log('mongoDB Connect'))
     .catch(err => console.log(err));
+
+mongoose.Promise = global.Promise;
 
 app.use(morgan('dev'));
 app.use(bodyParser.json());
