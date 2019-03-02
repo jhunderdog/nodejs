@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 
 const Order = require('../models/order');
 const Product = require('../models/product');
+const checkAuth = require('../middleware/check-auth');
 
-router.get( '/', (req,res,next)=>{
+router.get( '/', checkAuth, (req,res,next)=>{
     
     Order.find()
         .select("product quantity _id")

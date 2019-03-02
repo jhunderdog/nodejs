@@ -2,6 +2,7 @@ const express= require('express');
 const router= express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');
+const checkAuth = require('../middleware/check-auth');
 
 const storage = multer.diskStorage({
     destionation: function(req, file, cb) {
@@ -31,7 +32,7 @@ const upload = multer({
 const Product = require('../models/product');
 
 //데이터불러오기
-router.get('/', (req,res,next)=>{
+router.get('/', checkAuth, (req,res,next)=>{
     
     Product.find()
         .select("name price _id productImage")
@@ -62,7 +63,7 @@ router.get('/', (req,res,next)=>{
         });
 });
 
-router.get('/:productId', (req, res, next) => {
+router.get('/:productId', checkAuth, (req, res, next) => {
     const id = req.params.productId;
     Product.findById(id)
         .select("name price _id")
@@ -91,7 +92,7 @@ router.get('/:productId', (req, res, next) => {
         });
 });
 
-router.post( '/', upload.single('productImage'), (req,res,next)=> {
+router.post('/', checkAuth, upload.single('productImage'), (req,res,next)=> {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
@@ -130,13 +131,13 @@ router.post( '/', upload.single('productImage'), (req,res,next)=> {
     // });
 });
 
-router.post( '/:productId', (req,res,next)=>{
+router.post('/:productId', checkAuth, (req,res,next)=>{
     res.status(201).json({
         message:"product was created"
     });
 });
 
-router.delete( '/:productId', (req,res,next)=>{
+router.delete('/:productId', checkAuth, (req,res,next)=>{
 
     const id = req.params.productId;
     Product.remove({ _id:id })
@@ -159,7 +160,7 @@ router.delete( '/:productId', (req,res,next)=>{
         });
 });
 
-router.patch('/:productId', (req, res, next)=> {
+router.patch('/:productId', checkAuth, (req, res, next)=> {
     const id = req.params.productId;
     const updateOps = {};
     for (const ops of req.body) {
