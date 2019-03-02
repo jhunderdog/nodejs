@@ -3,6 +3,8 @@ const app = express();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+var path = require('path');
+
 
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
@@ -16,9 +18,11 @@ mongoose.connect(db, { useNewUrlParser: true })
     .catch(err => console.log(err));
 
 mongoose.Promise = global.Promise;
+mongoose.set('useCreateIndex', true)
 
 app.use(morgan('dev'));
-app.use('/uploads/', express.static('uploads'));
+app.use("/uploads", express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
